@@ -10,16 +10,15 @@ data/swa/*
 data/swa/0-swa_anomalies/*
 !data/swa/0-swa_anomalies/.gitkeep
 
-data/yield/*/*
-!data/yield/*/
+data/yield/*/
+!data/yield/data/
 
 data/correlation/*
 !data/correlation/.gitkeep
 
 
+*.txt
 
-# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
-# C extensions
