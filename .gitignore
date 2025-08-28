@@ -1,7 +1,25 @@
 .venv
 .vscode
 
-data
 
 
-*.pyc
+data/swa/0-swa_anomalies/*
+data/swa/*
+!data/swa/0-swa_anomalies/
+!data/swa/0-swa_anomalies/.gitkeep
+data/swa/0-swa_anomalies/*
+!data/swa/0-swa_anomalies/.gitkeep
+
+data/yield/*/*
+!data/yield/*/
+
+data/correlation/*
+!data/correlation/.gitkeep
+
+
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+# C extensions
