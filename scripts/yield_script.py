@@ -13,7 +13,7 @@ from src.config import config
 
 
 
-def run(args, config):
+def run(args):
     print("\n############ YIELD ANALYSIS SCRIPT ################\n")
     if getattr(args, "run", False):
         args.data_standardization = True
@@ -93,7 +93,12 @@ if __name__ == "__main__":
     ### General options
     parser = argparse.ArgumentParser(description="Standardize and analyze yield data for various regions.")
     parser.add_argument("--run", "--run_all", help="Run all steps: standardization, processing, visualization", action="store_true")
+    
+
+    ### Configuration options
     parser.add_argument("-r", "--regions", nargs="+", default="all", help="Regions to standardize", choices=["europe", "usa", "china", "india", "canada", "argentina", "brazil", "all"], type=str)
+    parser.add_argument("--start_year", type=int, default=config.start_year, help="Start year for analysis (default: 1991)")
+    parser.add_argument("--end_year", type=int, default=config.end_year, help="End year for analysis (default: 2023)")
 
 
     ### Standardization options
@@ -120,13 +125,9 @@ if __name__ == "__main__":
     group_vis.add_argument("--save_plot", help="Save plots after computation", action="store_true")
     group_vis.add_argument("--anomaly_type", type=str, default="normalized", choices=["standardized", "normalized"], help="Type of anomaly series to plot")
     group_vis.add_argument("--anomaly_map", type=str, default="neg", choices=["neg", "pos"], help="Type of anomaly map to plot. 'neg' for negative anomalies, 'pos' for positive anomalies")
-    group_vis.add_argument("--start_year", type=int, default=1991, help="Start year for analysis (default: 1991)")
-    group_vis.add_argument("--end_year", type=int, default=2023, help="End year for analysis (default: 2023)")
-
     
-
-
+    
     args = parser.parse_args()
-    run(args, config=None)
+    run(args)
 
 

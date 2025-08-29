@@ -6,7 +6,6 @@
 # This module computes the Matthews Correlation Coefficient (MCC) between
 # Standardized Water Anomaly (SWA) and yield anomalies for various thresholds.
 # --------------------------------------------------------------
-from src.config import config
 import src.utils as utils
 import os
 import pandas as pd
@@ -15,18 +14,20 @@ import xarray as xr
 import numpy as np
 from sklearn.metrics import matthews_corrcoef
 
+config = None  # to be set from outside
+
 # ---------- CONSTANTS -----------------------------------------
-swa_threshold = config.th_detection_drought
-period_agg = utils.get_period_aggregation_str(config.month_start, config.month_end)
+# swa_threshold = config.th_detection_drought
+# period_agg = utils.get_period_aggregation_str(config.month_start, config.month_end)
 
-list_TH_SWA = config.TH_SWA_list
-list_TH_YA = config.TH_YA_list
+# list_TH_SWA = config.TH_SWA_list
+# list_TH_YA = config.TH_YA_list
 
-TH_YA = config.TH_SWA
-TH_SWA = config.TH_YA 
+# TH_YA = config.TH_SWA
+# TH_SWA = config.TH_YA 
 
-FILE_YA = config.paths.CORR_YA_FILE
-FILE_SWA = config.paths.CORR_SWA_FILE
+# FILE_YA = config.paths.CORR_YA_FILE
+# FILE_SWA = config.paths.CORR_SWA_FILE
 # --------------------------------------------------------------
 
 # ---------- FUNCTIONS -----------------------------------------
@@ -34,10 +35,10 @@ def check_data_input():
     """
     Check if the data needed for the combination is available.
     """
-    if not os.path.exists(FILE_YA):
-        raise FileNotFoundError(f"Yield anomaly file not found: {FILE_YA}")
-    if not os.path.exists(FILE_SWA):
-        raise FileNotFoundError(f"SWA data directory not found: {FILE_SWA}")
+    if not os.path.exists(config.paths.CORR_YA_FILE):
+        raise FileNotFoundError(f"Yield anomaly file not found: {config.paths.CORR_YA_FILE}")
+    if not os.path.exists(config.paths.CORR_SWA_FILE):
+        raise FileNotFoundError(f"SWA data directory not found: {config.paths.CORR_SWA_FILE}")
 
 def read_excel_data(file_path):
     """Read data from an Excel file in a specific format.
@@ -90,10 +91,11 @@ def save_to_netcdf(ds):
     ds.attrs["author"]              = "Enzo Fortin"
     ds.attrs["institution"]         = "Politecnico di Milano"
     ds.attrs["note"]                = "Work performed during internship at Politecnico di Milano - Summer 2025"
-    ds.attrs["swa_threshold"]       = swa_threshold
-    ds.attrs["period_aggregation"]  = period_agg
-    ds.attrs["TH_SWA_list"]         = list_TH_SWA
-    ds.attrs["TH_YA_list"]          = list_TH_YA
+    ds.attrs["swa_threshold"]       = config.th_detection_drought
+    ds.attrs["period_aggregation"]  = utils.get_period_aggregation_str(config.month_start, config.month_end)
+
+    ds.attrs["TH_SWA_list"]         = config.TH_SWA_list
+    ds.attrs["TH_YA_list"]          = config.TH_YA_list
 
     # Variable attributes
     ds["MCC"].attrs["long_name"] = "Matthews Correlation Coefficient"
@@ -165,7 +167,7 @@ def compute_mcc_xarray(ds_swa, ds_ya, th_swa_list, th_ya_list):
 def main(netcdf=False, excel=False):
     check_data_input()
 
-    df_ya, df_swa = read_excel_data(FILE_YA), read_excel_data(FILE_SWA)
+    df_ya, df_swa = read_excel_data(config.paths.CORR_YA_FILE), read_excel_data(config.paths.CORR_SWA_FILE)
 
     df_ya.columns.name, df_swa.columns.name = "region", "region"
     df_ya.index.name, df_swa.index.name = "time", "time"
@@ -173,7 +175,7 @@ def main(netcdf=False, excel=False):
     ds_ya = xr.DataArray(df_ya.values, dims=["time", "region"], coords={"time": df_ya.index, "region": df_ya.columns})
     ds_swa = xr.DataArray(df_swa.values, dims=["time", "region"], coords={"time": df_swa.index, "region": df_swa.columns})
 
-    mcc_ds = compute_mcc_xarray(ds_swa, ds_ya, list_TH_SWA, list_TH_YA)
+    mcc_ds = compute_mcc_xarray(ds_swa, ds_ya, config.TH_SWA_list, config.TH_YA_list)
     mcc_ds.name = "MCC"
 
     if netcdf: save_to_netcdf(mcc_ds)
@@ -181,6 +183,8 @@ def main(netcdf=False, excel=False):
 
 
 if __name__ == "__main__":
+    from src.config import config
+    config = config
     main(netcdf=False, excel=True)
 # --------------------------------------------------------------
 

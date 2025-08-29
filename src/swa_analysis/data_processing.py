@@ -6,7 +6,6 @@
 # This file aims to process the SWA data for their analysis. During the internship we only focused on SWA data over Europe.
 # So the region here corresponds to Europe and subregion to NUTS.
 # --------------------------------------------------------------
-from src.config import config
 import numpy as np
 import os
 import rioxarray as rxr
@@ -16,8 +15,23 @@ from rasterstats import zonal_stats
 import src.swa_analysis.visualization as visualization
 import src.utils as utils
 
+config = None  # Have to be set from outside before using the functions
+
 
 # ---------- FUNCTIONS -----------------------------------------
+def open_raster(path, masked=True):
+    """Open a raster file using rioxarray.
+    Args:
+        path (str, required): Path to the raster file.
+        masked (bool, optional): If True, mask the raster data. Defaults to True.
+    Returns:
+        raster (xarray.DataArray): The opened raster data.
+    """
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"Raster file not found at {path}")
+    raster = rxr.open_rasterio(path, masked=masked).squeeze()
+    return raster
+
 def process_swa(swa, corine, threshold, save=False, show=False, date=False):
     """Process SWA data with Corine Land Cover data.
     Here the SWA raster is filtered by a threshold and weighted by the Corine raster.
@@ -184,6 +198,8 @@ def run_swa(threshold, year_start=None, year_end=None, month_start=None, month_e
     list_years = list(range(year_start, year_end + 1)) if year_start and year_end else [year_start]
     list_months = list(range(month_start, month_end + 1)) if month_start and month_end else [month_start]
 
+    print(f"Custom data directory: {config.swa_config.CUSTOM_DATA_DIR}")
+
     progress_total = len(list_years) * len(list_months)
     progress_count = 0
 
@@ -215,12 +231,8 @@ def run_swa(threshold, year_start=None, year_end=None, month_start=None, month_e
 # --------------------------------------------------------------
 
 # --------------------------------------------------------------
-
 if __name__ == "__main__":
-    run_swa(
-        threshold=config.th_detection_drought,
-        year_start=config.start_year,
-        year_end=config.end_year,
-        month_start=config.month_start,
-        month_end=config.month_end
+    from src.config import Config
+    config = Config()
+    run_swa(config.th_detection_drought, year_start=config.start_year, year_end=config.end_year, month_start=config.month_start, month_end=config.month_end
     )

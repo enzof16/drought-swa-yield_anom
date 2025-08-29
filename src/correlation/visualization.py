@@ -5,7 +5,6 @@
 # Description :
 # This module handles the visualization of correlation results between SWA and yield anomalies.
 # --------------------------------------------------------------
-from src.config import config
 import os
 import pandas as pd
 import xarray as xr
@@ -22,28 +21,30 @@ from IPython import get_ipython
 hv.extension('bokeh', 'matplotlib')
 # --------------------------------------------------------------
 
+config = None  # to be set from outside
+
 
 # ---------- CONSTANTS -----------------------------------------
-CORRELATION_RESULTS_FILE = f"{config.corr_config.CORR_RESULTS_DIR}/mcc_results.nc"
-OUTPUT_DIR = f"{config.corr_config.CORR_OUTPUT_DIR}"
-SHAPEFILE_PATH = config.paths.NUTS_SHAPEFILE
+# CORRELATION_RESULTS_FILE = f"{config.corr_config.CORR_RESULTS_DIR}/mcc_results.nc"
+# OUTPUT_DIR = f"{config.corr_config.CORR_OUTPUT_DIR}"
+# SHAPEFILE_PATH = config.paths.NUTS_SHAPEFILE
 # --------------------------------------------------------------
 
 
 # ---------- DATA TREATMENT -----------------------------------------
 def load_correlation_results():
     """Load the correlation results from the NetCDF file."""
-    if not os.path.exists(CORRELATION_RESULTS_FILE):
-        raise FileNotFoundError(f"Correlation results file not found: {CORRELATION_RESULTS_FILE}")
-    ds = xr.open_dataset(CORRELATION_RESULTS_FILE)
+    if not os.path.exists(f"{config.corr_config.CORR_RESULTS_DIR}/mcc_results.nc"):
+        raise FileNotFoundError(f"Correlation results file not found: {f"{config.corr_config.CORR_RESULTS_DIR}/mcc_results.nc"}")
+    ds = xr.open_dataset(f"{config.corr_config.CORR_RESULTS_DIR}/mcc_results.nc")
     return ds
 
 
 def read_shapefile():
     """ Load the NUTS shapefile for mapping."""
-    if not os.path.exists(SHAPEFILE_PATH):
-        raise FileNotFoundError(f"Shapefile not found: {SHAPEFILE_PATH}")
-    gdf = gpd.read_file(SHAPEFILE_PATH)
+    if not os.path.exists(config.paths.NUTS_SHAPEFILE):
+        raise FileNotFoundError(f"Shapefile not found: {config.paths.NUTS_SHAPEFILE}")
+    gdf = gpd.read_file(config.paths.NUTS_SHAPEFILE)
     return gdf
 
 
@@ -116,8 +117,8 @@ def plot_mcc_map(ds, th_swa, th_ya, save=False, show=False):
     ax.axis('off')
 
     if save:
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        plt.savefig(f"{OUTPUT_DIR}/mcc_map_thswa_{th_swa}_thya_{th_ya}.png", dpi=300)
+        os.makedirs(f"{config.corr_config.CORR_OUTPUT_DIR}", exist_ok=True)
+        plt.savefig(f"{f"{config.corr_config.CORR_OUTPUT_DIR}"}/mcc_map_thswa_{th_swa}_thya_{th_ya}.png", dpi=300)
     
     if show:
         plt.show()
@@ -199,8 +200,8 @@ def plot_max_mcc_map(ds, save=False, show=False):
     plt.tight_layout()
 
     if save:
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
-        plt.savefig(f"{OUTPUT_DIR}/max_mcc_map.png", dpi=300)
+        os.makedirs(f"{config.corr_config.CORR_OUTPUT_DIR}", exist_ok=True)
+        plt.savefig(f"{f"{config.corr_config.CORR_OUTPUT_DIR}"}/max_mcc_map.png", dpi=300)
         plt.close()
     
     if show:
