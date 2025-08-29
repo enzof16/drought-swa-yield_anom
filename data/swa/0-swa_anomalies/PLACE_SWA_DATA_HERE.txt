@@ -1,0 +1,4 @@
+Please place the SWA TIF files for Europe here.
+
+The naming convention must be: swa_<year>-<month*3>.tif
+For instance, the file for July 2003 should be: swa_2003-21.tif

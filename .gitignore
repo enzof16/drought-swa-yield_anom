@@ -9,6 +9,8 @@ data/swa/*
 !data/swa/0-swa_anomalies/.gitkeep
 data/swa/0-swa_anomalies/*
 !data/swa/0-swa_anomalies/.gitkeep
+!data/swa/0-swa_anomalies/PLACE_SWA_DATA_HERE.txt
+
 
 data/yield/*/
 !data/yield/data/
@@ -16,8 +18,6 @@ data/yield/*/
 data/correlation/*
 !data/correlation/.gitkeep
 
-
-*.txt
 !requirements.txt
 
 __pycache__/
