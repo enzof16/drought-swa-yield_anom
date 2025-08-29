@@ -67,8 +67,24 @@ There are several ways to use this package depending on your needs:
   - All functionalities can be launched from the command line:
     - Either with the main `main.py` file to orchestrate the entire workflow with custom parameters:
       ```powershell
-      python main.py ...
+      python main.py
+      # Display the help/options :
+      python main.py --help
+      # To get the author, version, ...
+      python main.py --version --author --description
       ```
+      For all the commands, use --help or -h
+      - for using a module [yield, swa, correlation], do : 
+      ```powershell
+      python main.py yield 
+      # Display help
+      python main.py <module> --help
+      # Do the basic run of a module (pre-defined parameters)
+      python main.py <module> --run
+      # Run a module with specified parameters
+      python main.py <module> --run -th -0.5 --month_start 6 --month_end 10 ...
+      ```
+
     - Or with the individual scripts in `scripts/` to run each part separately:
       ```powershell
       python scripts/yield_script.py

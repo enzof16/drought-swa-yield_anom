@@ -60,6 +60,8 @@ def run(args):
         args.display_interactive_map_holoviz = True
         args.display_interactive_map_matplotlib = True
         args.save_data = "both"
+        args.show_plot = False
+        args.save_plot = True
 
     if getattr(args, "correlation_processing", False):
         print("Computing correlation maps...")
@@ -73,9 +75,9 @@ def run(args):
             vz.plot_mcc_map(ds, th_swa=config.TH_SWA, th_ya=config.TH_YA, save=getattr(args, "save_plot", False), show=getattr(args, "show_plot", False))
         if getattr(args, "plot_max_mcc_map", False):
             vz.plot_max_mcc_map(ds, save=getattr(args, "save_plot", False), show=getattr(args, "show_plot", False))
-        if getattr(args, "display_interactive_map_holoviz", False):
+        if getattr(args, "display_interactive_map_holoviz", False) and getattr(args, "show_plot", False):
             vz.holoviz_interactive_mcc(ds, mode=getattr(args, "mode_holoviz", None))
-        if getattr(args, "display_interactive_map_matplotlib", False):
+        if getattr(args, "display_interactive_map_matplotlib", False) and getattr(args, "show_plot", False):
             vz.interactive_mcc_map(ds)
         print("Visualization done.")
 
