@@ -1,7 +1,8 @@
 .venv
 .vscode
-
-
+data/shapefiles/*
+!data/shapefiles/
+!data/shapefiles/.gitkeep
 
 data/swa/0-swa_anomalies/*
 data/swa/*
