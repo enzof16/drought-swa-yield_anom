@@ -44,7 +44,9 @@ def plot_raster(raster, save=False, show= False, **kwargs):
         output_path = f"{config.OUTPUT_DIR}/{title.replace(' ', '_').lower()}.png"
         plt.savefig(output_path, bbox_inches='tight')
     if show:
-        plt.show()    
+        plt.show() 
+
+    plt.close()   
 
 
 
