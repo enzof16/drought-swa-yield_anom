@@ -1,9 +1,11 @@
 .venv
 .vscode
-data/shapefiles/*
-!data/shapefiles/
-!data/shapefiles/.gitkeep
-!data/shapefiles/PUT_FILES_INSIDE_THE_ZIP_HERE.txt
+
+
+# data/shapefiles/*
+# !data/shapefiles/
+# !data/shapefiles/.gitkeep
+# !data/shapefiles/PUT_FILES_INSIDE_THE_ZIP_HERE.txt
 
 data/swa/0-swa_anomalies/*
 data/swa/*
