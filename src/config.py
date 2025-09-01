@@ -10,15 +10,41 @@ import src.utils as utils
 import numpy as np
 
 class Config:
-    def __init__(self, th_detection_drought=-0.67, month_start=4, month_end=9, start_year=1991, end_year=2023, TH_SWA_list=(0,1,0.05), TH_YA_list=[0.,-0.3,-0.5,-0.67,-1.0,-1.5], TH_SWA=0.1, TH_YA=-0.67):
-        # Default parameters, can be modified in other files by using config.PARAMETER_NAME = new_value
-        self.th_detection_drought = th_detection_drought  # Default threshold for SWA drought analysis
-        self.month_start = month_start  # Default start month (April)
-        self.month_end = month_end    # Default end month (September)
-        self.start_year = start_year  # Default start year
-        self.end_year = end_year    # Default end year
-        self.TH_SWA = TH_SWA  # Default threshold for SWA time series
-        self.TH_YA = TH_YA  # Default threshold for yield anomaly time series
+    # Default configuration
+    DEFAULT_TH_DETECTION_DROUGHT = -0.67
+    DEFAULT_MONTH_START = 4
+    DEFAULT_MONTH_END = 9
+    DEFAULT_YEAR_START = 1991
+    DEFAULT_YEAR_END = 2023
+    DEFAULT_TH_SWA_LIST = (0, 1, 0.05)
+    DEFAULT_TH_YA_LIST = [0., -0.3, -0.5, -0.67, -1.0, -1.5]
+    DEFAULT_TH_SWA = 0.1
+    DEFAULT_TH_YA = -0.67
+    DEFAULT_REGIONS_LIST = ["europe", "usa", "china", "india", "canada", "argentina", "brazil"]
+    DEFAULT_REGIONS_TO_STANDARDIZE = ["usa", "china", "india", "canada", "argentina", "brazil"]
+
+    def __init__(
+        self,
+        th_detection_drought: float = DEFAULT_TH_DETECTION_DROUGHT,
+        month_start: int = DEFAULT_MONTH_START,
+        month_end: int = DEFAULT_MONTH_END,
+        year_start: int = DEFAULT_YEAR_START,
+        year_end: int = DEFAULT_YEAR_END,
+        TH_SWA_list = DEFAULT_TH_SWA_LIST,
+        TH_YA_list = DEFAULT_TH_YA_LIST,
+        TH_SWA: float = DEFAULT_TH_SWA,
+        TH_YA: float = DEFAULT_TH_YA,
+        regions_list = DEFAULT_REGIONS_LIST,
+        regions_to_standardize = DEFAULT_REGIONS_TO_STANDARDIZE,
+    ):
+        self.regions_list = regions_list,
+        self.th_detection_drought = th_detection_drought
+        self.month_start = month_start
+        self.month_end = month_end
+        self.year_start = year_start
+        self.year_end = year_end
+        self.TH_SWA = TH_SWA
+        self.TH_YA = TH_YA
         if isinstance(TH_YA_list, list):
             self.TH_YA_list = TH_YA_list
         elif isinstance(TH_YA_list, tuple) and len(TH_YA_list) == 3:
@@ -32,8 +58,12 @@ class Config:
         else:
             raise ValueError("TH_SWA_list must be a list or a tuple of (start, end, step)")
         
+        # "Calculated" options
+        self.sel_years = [self.year_start, self.year_end]
+        self.regions_to_standardize = regions_to_standardize
+        
         # Initialize sub-configurations
-        self.paths = self.Paths(th_detection_drought=self.th_detection_drought, start_year=self.start_year, end_year=self.end_year, month_start=self.month_start, month_end=self.month_end)
+        self.paths = self.Paths(self)
         self.yield_config = self.YieldConfig(data_dir_yield=self.paths.YIELD_DATA_DIR)
         self.swa_config = self.SwaConfig(data_dir_swa=self.paths.SWA_DATA_DIR, th_detection_drought=self.th_detection_drought, month_start=self.month_start, month_end=self.month_end)
         self.nuts_config = self.NUTSConfig()
@@ -41,8 +71,41 @@ class Config:
         self.corr_config = self.CorrelationConfig(data_dir_corr=self.paths.CORR_DIR, th_detection_drought=self.th_detection_drought, month_start=self.month_start, month_end=self.month_end)
     
 
+    
+    @classmethod
+    def from_args(cls, args):
+        """Build a Config object from argparse arguments.
+        Args:
+            args (argparse.Namespace): The parsed command-line arguments containing
+                configuration options.
+        Returns:
+            Config: An instance of the Config class with attributes set according to
+                the provided arguments or their default values.
+        Example:
+            >>> import argparse
+            >>> parser = argparse.ArgumentParser()
+            >>> parser.add_argument('--start_year', type=int, default=2000)
+            >>> args = parser.parse_args(['--start_year', '2020'])
+            >>> config = build_config_from_args(args)
+            >>> print(config.start_year)
+            2020
+        """
+        return Config(
+            th_detection_drought=getattr(args, "th_detection_drought", None) or cls.DEFAULT_TH_DETECTION_DROUGHT,
+            year_start=getattr(args, "year_start", None) or cls.DEFAULT_YEAR_START,
+            year_end=getattr(args, "year_end", None) or cls.DEFAULT_YEAR_END,
+            month_start=getattr(args, "month_start", None) or cls.DEFAULT_MONTH_START,
+            month_end=getattr(args, "month_end", None) or cls.DEFAULT_MONTH_END,
+            TH_SWA=getattr(args, "th_swa", None) or cls.DEFAULT_TH_SWA,
+            TH_YA=getattr(args, "th_ya", None) or cls.DEFAULT_TH_YA,
+            TH_SWA_list=getattr(args, "th_swa_list", None) or cls.DEFAULT_TH_SWA_LIST,
+            TH_YA_list=getattr(args, "th_ya_list", None) or cls.DEFAULT_TH_YA_LIST
+        )
+
     class Paths:
-        def __init__(self, th_detection_drought, start_year, end_year, month_start, month_end):
+        def __init__(self, config):
+            self.config = config
+
             """Configuration class for project paths and constants.
             The paths are set relative to the project root directory.
             Here, the values can be modified if needed."""
@@ -63,10 +126,9 @@ class Config:
 
             # Specific paths for correlation analysis
             self.CORR_DIR = f"{self.DATA_DIR}/correlation"
-            self.CORR_SWA_FILE = f"{self.SWA_DATA_DIR}/th_{th_detection_drought}/{utils.get_period_aggregation_str(month_start, month_end)}/4-temporal_series/temporal_series_swa-{start_year}_{end_year}-{utils.get_month_str(month_start)}_{utils.get_month_str(month_end)}.xlsx"
-            self.CORR_YA_FILE = f"{self.YIELD_DATA_DIR}/output/europe_prod_anom-{start_year}_{end_year}.xlsx"
+            self.CORR_SWA_FILE = f"{self.SWA_DATA_DIR}/th_{self.config.th_detection_drought}/{utils.get_period_aggregation_str(self.config.month_start, self.config.month_end)}/4-temporal_series/temporal_series_swa-{self.config.year_start}_{self.config.year_end}-{utils.get_month_str(self.config.month_start)}_{utils.get_month_str(self.config.month_end)}.xlsx"
+            self.CORR_YA_FILE = f"{self.YIELD_DATA_DIR}/output/europe_prod_anom-{self.config.year_start}_{self.config.year_end}.xlsx"
             
-
     class YieldConfig:
             def __init__(self, data_dir_yield:Path=None):
                 self.REGIONS = ["europe", "usa", "china", "india", "canada", "argentina", "brazil"]
@@ -85,6 +147,8 @@ class Config:
                     "brazil": f"{self.DATA_DIR}/brazil/data_all_brazil.xlsx"
                 }
                 self.CODE_REGIONS = {"europe":None, "usa":"US", "canada":"CA", "china":"CN", "india":"IN", "argentina":"AR", "brazil":"BR"}
+
+                # self.SEL_YEARS = 
                 
 
 
@@ -133,7 +197,7 @@ class Config:
                 else:
                     return {}
                 
-
+    
     class SwaConfig:
         def __init__(self, data_dir_swa:Path, th_detection_drought, month_start, month_end):
             self.th_detection_drought = th_detection_drought
@@ -149,7 +213,7 @@ class Config:
             self.SWA_TEMPORAL_SERIES_DIR = f"{self.CUSTOM_DATA_DIR}/4-temporal_series"
             self.SWA_TEMPORAL_SERIES_PLOT_DIR = f"{self.CUSTOM_DATA_DIR}/4.1-temporal_series_region_plot"
 
-
+    
     class CorrelationConfig:
         def __init__(self, data_dir_corr:Path, th_detection_drought, month_start, month_end):
             self.th_detection_drought = th_detection_drought
@@ -202,7 +266,7 @@ class Config:
             "HU", "DK", "CZ", "BG", "RS", "LT", "AL", "BA", "BE", "CY", "EE", "IE", "LV", "MK", "MT", "NL", "NO", "SI", "SK", "CH", "HR", "ME", "XK"
             ]
         
-        
+    
     class PlotConfig:
         def __init__(self):
             self.BOUNDARIES = {

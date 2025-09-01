@@ -7,7 +7,6 @@
 # --------------------------------------------------------------
 import datetime as dt
 
-
 def aggregate_regions_shp():
     """Create a new shapefile with aggregated regions based on the provided mapping.
     Args :

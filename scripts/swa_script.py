@@ -14,19 +14,14 @@ from src.config import Config
 
 def run(args):
     print("\n############ SWA ANALYSIS SCRIPT ################\n")
-    global config
-    if any(getattr(args, k, None) is not None for k in ["start_year", "end_year", "month_start", "month_end", "th_detection_drought"]):
-        config = Config(th_detection_drought=getattr(args, "th_detection_drought", Config().th_detection_drought),
-                        start_year=getattr(args, "start_year", Config().start_year),
-                        end_year=getattr(args, "end_year", Config().end_year),
-                        month_start=getattr(args, "month_start", Config().month_start),
-                        month_end=getattr(args, "month_end", Config().month_end))
-    else:
-        config = Config()
+
+    config = Config.from_args(args)
     
     dp.config = config  # update config in data_processing
     vz.config = config  # update config in visualization
 
+
+    # Run arguments
     if getattr(args, "run", False):
         args.data_processing = True
         args.visualization = True
@@ -36,57 +31,53 @@ def run(args):
 
     ### SWA Data Processing
     if args.data_processing:
-        print("Starting data processing...")
+        print("> Processing of SWA data")
         dp.run_swa(
             threshold=config.th_detection_drought,
-            year_start=config.start_year,
-            year_end=config.end_year,
+            year_start=config.year_start,
+            year_end=config.year_end,
             month_start=config.month_start,
             month_end=config.month_end
         )
+        print("Data processing completed\n")    
 
 
     ### SWA Data Visualization
     if getattr(args, "visualization", False):
+        print("> Visualization of SWA data")
         if getattr(args, "plot_time_series", False):
-            print("Starting visualization...")
-            dp.temporal_series_region(year_start=config.start_year,year_end=config.end_year, month_start=config.month_start, month_end=config.month_end, save=False, show=getattr(args, "show_plot", False), save_plot=getattr(args, "save_plot", False), threshold=config.th_detection_drought)
+            print("     > Plotting temporal series for Europe")
+            dp.temporal_series_region(year_start=config.year_start,year_end=config.year_end, month_start=config.month_start, month_end=config.month_end, save=False, show=getattr(args, "show_plot", False), save_plot=getattr(args, "save_plot", False), threshold=config.th_detection_drought)
+            print("     Temporal series plotted")
+        print("Visualization completed\n")
 
-    # TO FIX LATER
-        # if getattr(args, "plot_raster", False):
-        #     print("Plotting raster data...")
-        #     if not args.raster:
-        #         raise ValueError("Please specify a raster to plot with --raster")
-        #     raster = args.raster
-        #     vz.plot_raster(dp.open_raster(raster), save=getattr(args, "save_plot", False), show=getattr(args, "show_plot", False))
+        if getattr(args, "plot_raster", False):
+            print("     > Plotting raster data")
+            if getattr(args, "raster_path", None) is not None:
+                vz.plot_raster(raster=dp.open_raster(getattr(args, "raster_path", None)), cmap="RdBu", save=getattr(args, "save_plot", False), show=getattr(args, "show_plot", False))
+            else:
+                print("     No raster path provided. Skipping raster plot.")
+            print("     Raster data plotted")
 
-        # if getattr(args, "plot_shapefile", False):
-        #     print("Plotting shapefile data...")
-            
-        #     vz.plot_shapefile()
+        # to complete
 
 
 
 if __name__ == "__main__":
-    from src.config import config
     parser = argparse.ArgumentParser(description="Analyze SWA data for various regions.")
     parser.add_argument("--run", "--run_all", help="Run all steps: processing, visualization. Just Europe is available here", action="store_true")
 
     # General options
     group_gen = parser.add_argument_group("General options")
-    group_gen.add_argument("--th_detection_drought", "--threshold", "-th", default=config.th_detection_drought, type=float, help="Threshold for drought detection")
-    group_gen.add_argument("--start_year", type=int, default=config.start_year, help="Start year")
-    group_gen.add_argument("--end_year", type=int, default=config.end_year, help="End year")
-    group_gen.add_argument("--month_start", type=int, default=config.month_start, help="Start month")
-    group_gen.add_argument("--month_end", type=int, default=config.month_end, help="End month")
+    group_gen.add_argument("--th_detection_drought", "--threshold", "-th", type=float, help="Threshold for drought detection")
+    group_gen.add_argument("--year_start", type=int, help="Start year")
+    group_gen.add_argument("--year_end", type=int, help="End year")
+    group_gen.add_argument("--month_start", type=int, help="Start month")
+    group_gen.add_argument("--month_end", type=int, help="End month")
 
     # Processing options
     group_proc = parser.add_argument_group("Processing options")
     group_proc.add_argument("-dp", "--data_processing", help="Run data processing", action="store_true")
-    group_proc.add_argument("--temporal_series_region", "--temporal_serie", help="Calculate temporal series for a region", action="store_true")
-    group_proc.add_argument("--processed_swa", help="Process SWA data", action="store_true")
-    group_proc.add_argument("--spatial_mean_shp", help="Calculate spatial mean for shapefile regions", action="store_true")
-    group_proc.add_argument("--temporal_mean_shp", help="Calculate temporal mean for shapefile regions", action="store_true")
 
     # Visualization options
     group_vis = parser.add_argument_group("Visualization options")
@@ -100,8 +91,6 @@ if __name__ == "__main__":
 
 
     args = parser.parse_args()
-    # for arg in vars(args):
-    #     print(f"{arg} : {getattr(args, arg)}")
     run(args)
 
 

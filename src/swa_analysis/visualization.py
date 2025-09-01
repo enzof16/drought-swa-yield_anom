@@ -7,11 +7,12 @@
 # --------------------------------------------------------------
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
-from src.config import config
 import geopandas as gpd
 import numpy as np
 import os
+import src.utils as utils
 
+config = None # Have to be set from outside before using the functions
 
 # ----- MAPS -----
 def plot_raster(raster, save=False, show= False, **kwargs):
@@ -22,6 +23,7 @@ def plot_raster(raster, save=False, show= False, **kwargs):
     Returns:
         None: Displays the plot.
     """
+
     # Extract optional parameters
     cmap = kwargs.get("cmap", None)
     type = kwargs.get("type", None)
@@ -126,7 +128,11 @@ def plot_time_serie(data, save=False, show=False, save_dir=None, **kwargs):
     month_end = kwargs.get("month_end", None)
     threshold = kwargs.get("threshold", None)
     
+    progress_count = 0
+    progress_total = len(data.columns)
+
     for subregion in data.columns:
+
         plt.figure(figsize=(10, 5))
         plt.plot(data[subregion].index, data[subregion].values, label=subregion, marker='none', linestyle='-', color="black", linewidth=0.5)
         plt.suptitle(f"Time Series of SWA for {subregion}", fontsize=14)
@@ -141,5 +147,9 @@ def plot_time_serie(data, save=False, show=False, save_dir=None, **kwargs):
             plt.savefig(f"{save_dir}/temporal_series_swa-{year_start}_{year_end}-{month_start}_{month_end}_{subregion}.png", bbox_inches='tight')
         if show:
             plt.show()
+
+        progress_count += 1
+        utils.progress_bar(progress_count, progress_total, prefix=f"Progress:", suffix='Complete', bar_length=50)
+
         plt.close()
 # -----------------------

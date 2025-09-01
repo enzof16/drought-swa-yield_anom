@@ -29,7 +29,7 @@ def open_raster(path, masked=True):
     """
     if not os.path.exists(path):
         raise FileNotFoundError(f"Raster file not found at {path}")
-    raster = rxr.open_rasterio(path, masked=masked).squeeze()
+    raster = rxr.open_rasterio(path, masked=masked).sel(band=1).squeeze()
     return raster
 
 def process_swa(swa, corine, threshold, save=False, show=False, date=False):
@@ -197,8 +197,6 @@ def run_swa(threshold, year_start=None, year_end=None, month_start=None, month_e
     """
     list_years = list(range(year_start, year_end + 1)) if year_start and year_end else [year_start]
     list_months = list(range(month_start, month_end + 1)) if month_start and month_end else [month_start]
-
-    print(f"Custom data directory: {config.swa_config.CUSTOM_DATA_DIR}")
 
     progress_total = len(list_years) * len(list_months)
     progress_count = 0

@@ -9,12 +9,19 @@ import argparse
 import src.yield_analysis.data_standardization as ds
 import src.yield_analysis.data_processing as dp
 import src.yield_analysis.visualization as vz
-from src.config import config
-
+from src.config import Config
 
 
 def run(args):
     print("\n############ YIELD ANALYSIS SCRIPT ################\n")
+
+    config = Config.from_args(args)
+
+    ds.config = config  # update config in data_standardization
+    dp.config = config  # update config in data_processing
+    vz.config = config  # update config in visualization
+
+    # Run arguments
     if getattr(args, "run", False):
         args.data_standardization = True
         args.data_processing = True
@@ -27,17 +34,15 @@ def run(args):
         args.save_plot = True
         args.show_plot = False
 
-    if args.regions == "all":
-        args.regions = ["europe", "usa", "china", "india", "canada", "argentina", "brazil"]
-
-
+    if args.regions == ["all"]:
+        config.regions_list = ["europe", "usa", "china", "india", "canada", "argentina", "brazil"]
 
     ### Yield Data Standardization
     if getattr(args, "data_standardization", False):
         print("> Standardization of yield data")
         ds.copy_european_data()
-        regions_to_standardize = [region for region in args.regions if region != "europe"]
-        ds.save_data(ds.standardize_data(regions_to_standardize, sel_years=[args.start_year, args.end_year], total_region=False))
+        config.regions_to_standardize = [r for r in args.regions if r != "europe"]
+        ds.save_data(ds.standardize_data())
         print("Data standardization completed\n")
 
 
@@ -67,13 +72,13 @@ def run(args):
                 print("         Anomaly series saved")
             if getattr(args, "plot_anomaly_map", False) or all_plots:
                 print("         > Plotting Anomaly Map")
-                vz.plot_anomaly_map(region, anomaly=getattr(args, "anomaly_map", "neg"), sel_years=[args.start_year, args.end_year], save=getattr(args, "save_plot"), show=getattr(args, "show_plot"))
+                vz.plot_anomaly_map(region, anomaly=getattr(args, "anomaly_map", "neg"), sel_years=[args.year_start, args.year_end], save=getattr(args, "save_plot"), show=getattr(args, "show_plot"))
                 print("         Anomaly map saved")
             if getattr(args, "plot_area_covered", False) or all_plots:
                 print("         > Plotting Area Covered Series")
                 vz.plot_area_covered(
                     region,
-                    dp.process_area_covered(region, sel_years=[args.start_year, args.end_year], thresh_min=-2.5, thresh_max=0, step=0.5, inf=True),
+                    dp.process_area_covered(region, sel_years=[args.year_start, args.year_end], thresh_min=-2.5, thresh_max=0, step=0.5, inf=True),
                     save=getattr(args, "save_plot", False),
                     show=getattr(args, "show_plot", False),
                     thresh_min=-2.5,
@@ -88,17 +93,18 @@ def run(args):
 
 
 if __name__ == "__main__":
-    import argparse
-    
+    from src.config import config
+
+
     ### General options
     parser = argparse.ArgumentParser(description="Standardize and analyze yield data for various regions.")
-    parser.add_argument("--run", "--run_all", help="Run all steps: standardization, processing, visualization", action="store_true")
+    parser.add_argument("-r", "--run", "--run_all", help="Run all steps: standardization, processing, visualization", action="store_true")
     
 
     ### Configuration options
-    parser.add_argument("-r", "--regions", nargs="+", default="all", help="Regions to standardize", choices=["europe", "usa", "china", "india", "canada", "argentina", "brazil", "all"], type=str)
-    parser.add_argument("--start_year", type=int, default=config.start_year, help="Start year for analysis (default: 1991)")
-    parser.add_argument("--end_year", type=int, default=config.end_year, help="End year for analysis (default: 2023)")
+    parser.add_argument("--regions", nargs="+", default=["europe", "usa", "china", "india", "canada", "argentina", "brazil"], help="Regions to standardize", choices=["europe", "usa", "china", "india", "canada", "argentina", "brazil", "all"], type=str)
+    parser.add_argument("--year_start", type=int, default=config.year_start, help="Start year for analysis (default: 1991)")
+    parser.add_argument("--year_end", type=int, default=config.year_end, help="End year for analysis (default: 2023)")
 
 
     ### Standardization options

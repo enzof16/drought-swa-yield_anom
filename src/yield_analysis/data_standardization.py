@@ -7,9 +7,9 @@
 # --------------------------------------------------------------
 import pandas as pd
 import os
-from src.config import config
 import shutil
 
+config = None # Have to be set from outside before using the functions
 
 def copy_european_data():
     """
@@ -28,7 +28,7 @@ def copy_european_data():
                 shutil.copy(src_file, dest_file)
 
 
-def standardize_data(regions:list, sel_years:list=None, total_region=False):
+def standardize_data(total_region=False):
     """
     Standardizes agricultural production data for a given region and year
     Args:
@@ -40,7 +40,7 @@ def standardize_data(regions:list, sel_years:list=None, total_region=False):
     """
     dfs = {}
 
-    for region in regions:
+    for region in config.regions_to_standardize:
         # Ensure the region is valid
         valid_regions = ["usa", "china", "india", "canada", "argentina", "brazil"]
         if region not in valid_regions:
@@ -81,8 +81,8 @@ def standardize_data(regions:list, sel_years:list=None, total_region=False):
             data = data[data["Commodity"] == "WHEAT"]
             data = data.drop(columns=["Commodity"])
 
-            if sel_years is not None:
-                data = data[data["Year"].between(sel_years[0], sel_years[-1])]
+            if config.sel_years is not None:
+                data = data[data["Year"].between(config.sel_years[0], config.sel_years[-1])]
             
             # Creation two datasets for the wheat production and area
             df_prod_usa = data[data["Data Item"] == "PRODUCTION"].drop(columns=["Data Item"]).pivot(index="Year", columns="State", values="Value")
@@ -113,8 +113,8 @@ def standardize_data(regions:list, sel_years:list=None, total_region=False):
                 if kind_of_data == "prod":
                     values = values / 10 
 
-                if sel_years is not None:
-                    values = values.loc[values.index.to_series().between(sel_years[0], sel_years[-1])]
+                if config.sel_years is not None:
+                    values = values.loc[values.index.to_series().between(config.sel_years[0], config.sel_years[-1])]
                 
                 dfs[f"china_{kind_of_data}"] = [values, kind_of_data, "china"]
             # End of China Data Standardization
@@ -155,8 +155,8 @@ def standardize_data(regions:list, sel_years:list=None, total_region=False):
                 df_cereals_india = pd.concat(dict_cereals_india).droplevel(1).T
                 df_cereals_india.index.name, df_cereals_india.columns.name = "Year", "Subregion"
 
-                if sel_years is not None:
-                    df_cereals_india = df_cereals_india.loc[df_cereals_india.index.to_series().between(sel_years[0], sel_years[-1])]
+                if config.sel_years is not None:
+                    df_cereals_india = df_cereals_india.loc[df_cereals_india.index.to_series().between(config.sel_years[0], config.sel_years[-1])]
                 
                 dfs[f"{region}_{kind_of_data}"] = [df_cereals_india, kind_of_data, "india"]
             # End of India Data Standardization
@@ -187,8 +187,8 @@ def standardize_data(regions:list, sel_years:list=None, total_region=False):
                 data = data.pivot(index="REF_DATE", columns="GEO", values="VALUE")
                 data.index.name = "Year"
 
-                if sel_years is not None:
-                    data = data.loc[data.index.to_series().between(sel_years[0], sel_years[-1])]
+                if config.sel_years is not None:
+                    data = data.loc[data.index.to_series().between(config.sel_years[0], config.sel_years[-1])]
 
                 dfs[f"{kind_of_data}_canada"] = [data, kind_of_data, "canada"]
             # End of Canada Data Standardization
@@ -215,9 +215,9 @@ def standardize_data(regions:list, sel_years:list=None, total_region=False):
 
             data_prod.columns.name, data_area.columns.name = "Region", "Region"
 
-            if sel_years is not None:
-                data_prod = data_prod.loc[data_prod.index.to_series().between(sel_years[0], sel_years[-1])]
-                data_area = data_area.loc[data_area.index.to_series().between(sel_years[0], sel_years[-1])]
+            if config.sel_years is not None:
+                data_prod = data_prod.loc[data_prod.index.to_series().between(config.sel_years[0], config.sel_years[-1])]
+                data_area = data_area.loc[data_area.index.to_series().between(config.sel_years[0], config.sel_years[-1])]
             
             dfs["prod_argentina"] = [data_prod, "prod", "argentina"]
             dfs["area_argentina"] = [data_area, "area", "argentina"]
@@ -240,8 +240,8 @@ def standardize_data(regions:list, sel_years:list=None, total_region=False):
 
                 data.index = data.iloc[:, 1].ffill().astype(int)  # Set the index to the first column (Year) and convert to int
 
-                if sel_years is not None:
-                    data = data[(data.index.astype(int) >= sel_years[0]) & (data.index.astype(int) <= sel_years[-1])]
+                if config.sel_years is not None:
+                    data = data[(data.index.astype(int) >= config.sel_years[0]) & (data.index.astype(int) <= config.sel_years[-1])]
 
                 data = data.iloc[2::2,:]  # Keep only the rows with production values (every second row)
 
@@ -329,10 +329,12 @@ def run_standardization():
         regions = ["usa", "china", "india", "canada", "argentina", "brazil"]
     else:
         regions = [region]
-    dfs = standardize_data(regions=regions, sel_years=None, total_region=False)
+    dfs = standardize_data(sel_years=None, total_region=False)
     save_data(dfs)
 
 if __name__ == "__main__":
+    from src.config import Config
+    config = Config()
     run_standardization()
 # # --------------------------------------------------------------
 
