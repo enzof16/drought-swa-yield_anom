@@ -38,7 +38,7 @@ def plot_anomaly_series(region, type, save=False, show=False):
             data_sub = data_sub_df[:, pos]
             filt_sub = filt_sub_df[:, pos]
 
-            print(f"Plotting anomaly series for {name[pos]} ({id[pos]}) in {region} ...")
+            print(f"Plotting anomaly series for {name[pos]} ({code[pos]}) in {region} ...")
             # Plotting the data -> à faire sur un meme graphique (ou plusieurs)
             plt.figure(figsize=(10, 5))
             plt.plot(years, data_sub, label=name[pos])

@@ -6,7 +6,7 @@
 # Main entry point for the drought-swa-yield_anom project.
 # --------------------------------------------------------------
 import argparse
-from src.config import Config
+from src.config import config
 import sys
 from argparse import ArgumentParser
 import shlex
@@ -25,29 +25,27 @@ def main():
 
     # Config options
     parser_config = parser.add_argument_group("Configuration options")
-    parser_config.add_argument("--th_detection_drought", "--threshold", "-th", type=float, default=Config().th_detection_drought, help="Threshold for drought detection")
-    parser_config.add_argument("--start_year", type=int, default=Config().start_year, help="Start year")
-    parser_config.add_argument("--end_year", type=int, default=Config().end_year, help="End year")
-    parser_config.add_argument("--month_start", type=int, default=Config().month_start, help="Start month")
-    parser_config.add_argument("--month_end", type=int, default=Config().month_end, help="End month")    
+    parser_config.add_argument("--th_detection_drought", "--threshold", "-th", type=float, default=config.th_detection_drought, help="Threshold for drought detection")
+    parser_config.add_argument("--start_year", type=int, default=config.year_start, help="Start year")
+    parser_config.add_argument("--end_year", type=int, default=config.year_end, help="End year")
+    parser_config.add_argument("--month_start", type=int, default=config.month_start, help="Start month")
+    parser_config.add_argument("--month_end", type=int, default=config.month_end, help="End month")    
     parser_config.add_argument("--regions", nargs="+", default=["all"], help="Regions to process", choices=["europe", "usa", "china", "india", "canada", "argentina", "brazil", "all"], type=str)
-    parser_config.add_argument("--TH_SWA", "--th_swa", type=float, default=Config().TH_SWA, help="Threshold for SWA analysis")
-    parser_config.add_argument("--TH_YA", "--th_ya", type=float, default=Config().TH_YA, help="Threshold for Yield analysis")
-    parser_config.add_argument("--TH_SWA_LIST", "--th_swa_list", nargs="+", type=float, default=Config().TH_SWA_list, help="List of thresholds for SWA analysis")
-    parser_config.add_argument("--TH_YA_LIST", "--th_ya_list", nargs="+", type=float, default=Config().TH_YA_list, help="List of thresholds for Yield analysis")
-
-
+    parser_config.add_argument("--TH_SWA", "--th_swa", type=float, default=config.TH_SWA, help="Threshold for SWA analysis")
+    parser_config.add_argument("--TH_YA", "--th_ya", type=float, default=config.TH_YA, help="Threshold for Yield analysis")
+    parser_config.add_argument("--TH_SWA_LIST", "--th_swa_list", nargs="+", type=float, default=config.TH_SWA_list, help="List of thresholds for SWA analysis")
+    parser_config.add_argument("--TH_YA_LIST", "--th_ya_list", nargs="+", type=float, default=config.TH_YA_list, help="List of thresholds for Yield analysis")
 
     
     ##### Yield analysis
     parser_yield = subparsers.add_parser("yield", help="Yield analysis")
 
     ## General options
-    parser_yield.add_argument("--run", "--run_all", help="Run all steps: standardization, processing, visualization", action="store_true")
+    parser_yield.add_argument("-r", "--run", "--run_all", help="Run all steps: standardization, processing, visualization", action="store_true")
     ## Configuration options
-    parser_yield.add_argument("-r", "--regions", nargs="+", default="all", help="Regions to standardize", choices=["europe", "usa", "china", "india", "canada", "argentina", "brazil", "all"], type=str)
-    parser_yield.add_argument("--start_year", type=int, default=Config().start_year, help="Start year for analysis (default: 1991)")
-    parser_yield.add_argument("--end_year", type=int, default=Config().end_year, help="End year for analysis (default: 2023)")
+    parser_yield.add_argument("--regions", nargs="+", default="all", help="Regions to standardize", choices=["europe", "usa", "china", "india", "canada", "argentina", "brazil", "all"], type=str)
+    parser_yield.add_argument("--start_year", type=int, default=config.year_start, help="Start year for analysis (default: 1991)")
+    parser_yield.add_argument("--end_year", type=int, default=config.year_end, help="End year for analysis (default: 2023)")
 
     ## Standardization options
     yield_group_std = parser_yield.add_argument_group("Standardization options")
@@ -78,15 +76,15 @@ def main():
 
     ##### SWA analysis
     parser_swa = subparsers.add_parser("swa", help="SWA analysis")
-    parser_swa.add_argument("--run", "--run_all", help="Run all steps: processing, visualization. Just Europe is available here", action="store_true")
+    parser_swa.add_argument("-r", "--run", "--run_all", help="Run all steps: processing, visualization. Just Europe is available here", action="store_true")
 
     # General options
     swa_group_gen = parser_swa.add_argument_group("General options")
-    swa_group_gen.add_argument("--th_detection_drought", "--threshold", "-th", default=Config().th_detection_drought, type=float, help="Threshold for drought detection")
-    swa_group_gen.add_argument("--start_year", type=int, default=Config().start_year, help="Start year")
-    swa_group_gen.add_argument("--end_year", type=int, default=Config().end_year, help="End year")
-    swa_group_gen.add_argument("--month_start", type=int, default=Config().month_start, help="Start month")
-    swa_group_gen.add_argument("--month_end", type=int, default=Config().month_end, help="End month")
+    swa_group_gen.add_argument("--th_detection_drought", "--threshold", "-th", default=config.th_detection_drought, type=float, help="Threshold for drought detection")
+    swa_group_gen.add_argument("--start_year", type=int, default=config.year_start, help="Start year")
+    swa_group_gen.add_argument("--end_year", type=int, default=config.year_end, help="End year")
+    swa_group_gen.add_argument("--month_start", type=int, default=config.month_start, help="Start month")
+    swa_group_gen.add_argument("--month_end", type=int, default=config.month_end, help="End month")
 
     # Processing options
     swa_group_proc = parser_swa.add_argument_group("Processing options")
@@ -111,17 +109,17 @@ def main():
 
     ##### Correlation analysis
     parser_corr = subparsers.add_parser("correlation", help="Correlation analysis")
-    parser_corr.add_argument("--run", "--run_all", help="Run all steps: compute correlations and visualize", action="store_true")
+    parser_corr.add_argument("-r", "--run", "--run_all", help="Run all steps: compute correlations and visualize", action="store_true")
 
     # General options
     corr_group_gen = parser_corr.add_argument_group("General options")
-    corr_group_gen.add_argument("--th_detection_drought", "--threshold", "-th", default=Config().th_detection_drought, type=float, help="Threshold for drought detection")
-    corr_group_gen.add_argument("--start_year", type=int, default=Config().start_year, help="Start year")
-    corr_group_gen.add_argument("--end_year", type=int, default=Config().end_year, help="End year")
-    corr_group_gen.add_argument("--month_start", type=int, default=Config().month_start, help="Start month")
-    corr_group_gen.add_argument("--month_end", type=int, default=Config().month_end, help="End month")
-    corr_group_gen.add_argument("--th_swa_list", type=str, default=Config().TH_SWA_list, help="List of thresholds for SWA in MCC map (comma-separated or tuple '(start,end,step)')")
-    corr_group_gen.add_argument("--th_ya_list", type=str, default=Config().TH_YA_list, help="List of thresholds for Yield Anomaly in MCC map (comma-separated or tuple '(start,end,step)')")
+    corr_group_gen.add_argument("--th_detection_drought", "--threshold", "-th", default=config.th_detection_drought, type=float, help="Threshold for drought detection")
+    corr_group_gen.add_argument("--start_year", type=int, default=config.year_start, help="Start year")
+    corr_group_gen.add_argument("--end_year", type=int, default=config.year_end, help="End year")
+    corr_group_gen.add_argument("--month_start", type=int, default=config.month_start, help="Start month")
+    corr_group_gen.add_argument("--month_end", type=int, default=config.month_end, help="End month")
+    corr_group_gen.add_argument("--th_swa_list", type=str, default=config.TH_SWA_list, help="List of thresholds for SWA in MCC map (comma-separated or tuple '(start,end,step)')")
+    corr_group_gen.add_argument("--th_ya_list", type=str, default=config.TH_YA_list, help="List of thresholds for Yield Anomaly in MCC map (comma-separated or tuple '(start,end,step)')")
     corr_group_gen.add_argument("-cp", "--correlation_processing", "--corr", "--correlation", help="Run correlation processing", action="store_true")
     
     # Processing options
@@ -138,8 +136,8 @@ def main():
     corr_group_vis.add_argument("--show_plot", help="Show correlation maps after computation", action="store_true")
     corr_group_vis.add_argument("--save_plot", help="Save correlation maps after computation", action="store_true")
     corr_group_vis.add_argument("--mode_holoviz", type=str, default=None, help="Mode for Holoviz interactive map", choices=["notebook", "browser"])
-    corr_group_vis.add_argument("--th_swa", type=float, default=Config().TH_SWA, help="Threshold for SWA in MCC map")
-    corr_group_vis.add_argument("--th_ya", type=float, default=Config().TH_YA, help="Threshold for Yield Anomaly in MCC map")
+    corr_group_vis.add_argument("--th_swa", type=float, default=config.TH_SWA, help="Threshold for SWA in MCC map")
+    corr_group_vis.add_argument("--th_ya", type=float, default=config.TH_YA, help="Threshold for Yield Anomaly in MCC map")
     
 
     args = parser.parse_args()

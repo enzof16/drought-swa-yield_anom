@@ -30,7 +30,6 @@ def run(args):
         args.plot_anomaly_series = True
         args.plot_anomaly_map = True
         args.plot_area_covered = True
-        args.regions = "all"
         args.save_plot = True
         args.show_plot = False
 
@@ -42,7 +41,7 @@ def run(args):
         print("> Standardization of yield data")
         ds.copy_european_data()
         config.regions_to_standardize = [r for r in args.regions if r != "europe"]
-        ds.save_data(ds.standardize_data())
+        ds.save_data(ds.standardize_data(config.regions_to_standardize))
         print("Data standardization completed\n")
 
 

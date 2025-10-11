@@ -23,7 +23,6 @@ hv.extension('bokeh', 'matplotlib')
 
 config = None  # to be set from outside
 
-
 # ---------- CONSTANTS -----------------------------------------
 # CORRELATION_RESULTS_FILE = f"{config.corr_config.CORR_RESULTS_DIR}/mcc_results.nc"
 # OUTPUT_DIR = f"{config.corr_config.CORR_OUTPUT_DIR}"
@@ -146,12 +145,12 @@ def plot_max_mcc_map(ds, save=False, show=False):
     ax[0,0].axis('off')
 
     gdf.boundary.plot(ax=ax[0,1], color='black', linewidth=0.2, zorder=2)
-    gdf.plot(column='TH_SWA', ax=ax[0,1], cmap="jet", vmin=0)
+    gdf.plot(column='TH_SWA', ax=ax[0,1], cmap="turbo", vmin=min(config.TH_SWA_list), vmax=max(config.TH_SWA_list))
     ax[0,1].set_title('TH_SWA at Max MCC')
     ax[0,1].axis('off')
 
     gdf.boundary.plot(ax=ax[1,1], color='black', linewidth=0.2, zorder=2)
-    gdf.plot(column='TH_YA', ax=ax[1,1], cmap="plasma", vmin=-1.5, vmax=0)
+    gdf.plot(column='TH_YA', ax=ax[1,1], cmap="turbo", vmin=min(config.TH_YA_list), vmax=max(config.TH_YA_list))
     ax[1,1].set_title('TH_YA at Max MCC')
     ax[1,1].axis('off')
 
@@ -174,12 +173,12 @@ def plot_max_mcc_map(ds, save=False, show=False):
             cbar._A = []
             fig.colorbar(cbar, ax=ax[i,j], orientation='horizontal', fraction=0.05, pad=0.05, aspect=50, shrink=0.7)
         elif (i,j) == (0,1):
-            cbar = plt.cm.ScalarMappable(cmap="jet", norm=plt.Normalize(vmin=0, vmax=ds['TH_SWA'].values.max()))
+            cbar = plt.cm.ScalarMappable(cmap="turbo", norm=plt.Normalize(vmin=min(config.TH_SWA_list), vmax=max(config.TH_SWA_list)))
             cbar._A = []
             fig.colorbar(cbar, ax=ax[i,j], orientation='horizontal', fraction=0.05, pad=0.05, aspect=50, shrink=0.7,
                          extend="max", ticks=ds['TH_SWA'].values.round(1).tolist())
         elif (i,j) == (1,1):
-            cbar = plt.cm.ScalarMappable(cmap="plasma", norm=plt.Normalize(vmin=-1.5, vmax=0))
+            cbar = plt.cm.ScalarMappable(cmap="turbo", norm=plt.Normalize(vmin=min(config.TH_YA_list), vmax=max(config.TH_YA_list)))
             cbar._A = []
             fig.colorbar(cbar, ax=ax[i,j], orientation='horizontal', fraction=0.05, pad=0.05, aspect=50, shrink=0.7,
                          extend="min", ticks=ds['TH_YA'].values)
@@ -206,7 +205,6 @@ def plot_max_mcc_map(ds, save=False, show=False):
     
     if show:
         plt.show()  
-    
 
 
 def interactive_mcc_map(ds):
@@ -348,4 +346,5 @@ def holoviz_interactive_mcc(ds, mode=None):
         pn.serve(pn.Row(mcc_map.param, mcc_map.view), show=True)
     else:
         raise ValueError("Invalid mode. Choose 'notebook' or 'browser'.")
+
 

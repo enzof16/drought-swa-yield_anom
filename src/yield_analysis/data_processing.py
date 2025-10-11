@@ -80,7 +80,10 @@ def get_prod_anom(region, return_data=False, return_years=False, return_meta=Fal
     prod_anom = pd.DataFrame(prod_anom, columns=iso_3166_2 if region!="europe" else code, index=years)
     prod_anom.index.name = "year"
     prod_anom.columns.name = "id"
-    prod_anom = prod_anom.sort_index(axis=1)
+
+    ### Do not sort the columns to keep the original order, or it will mix for the plotting !
+    # prod_anom = prod_anom.sort_index(axis=1)
+
 
     # Build the return tuple based on requested flags
     result = {"prod_anom": prod_anom}
@@ -94,7 +97,6 @@ def get_prod_anom(region, return_data=False, return_years=False, return_meta=Fal
         prod_anom.to_excel(output_file, index=True, header=True)
 
     return result
-
 
 
 def get_anom_df(region, sel_years=None, return_years=False, return_meta=False):
