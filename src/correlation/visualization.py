@@ -105,7 +105,7 @@ def get_max_mcc_shapefile(ds):
 # ---------- VISUALIZATION ---------------------------------------
 def plot_mcc_map(ds, th_swa, th_ya, save=False, show=False):
     """Plot a static MCC map for given thresholds TH_SWA and TH_YA."""
-    mcc_da = ds.sel(TH_SWA=th_swa, TH_YA=th_ya)['MCC']
+    mcc_da = ds.sel(TH_SWA=th_swa, TH_YA=th_ya, method="nearest")['MCC']
     df_mcc = pd.DataFrame({'Region': mcc_da['region'].values, 'MCC': mcc_da.values})
     gdf = read_shapefile()
     gdf = associate_shp_data(gdf, df_mcc, 'MCC')
