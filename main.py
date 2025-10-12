@@ -69,7 +69,7 @@ def main():
     yield_group_vis.add_argument("--save_plot", help="Save plots after computation", action="store_true")
     yield_group_vis.add_argument("--anomaly_type", type=str, default="normalized", choices=["standardized", "normalized"], help="Type of anomaly series to plot")
     yield_group_vis.add_argument("--anomaly_map", type=str, default="neg", choices=["neg", "pos"], help="Type of anomaly map to plot. 'neg' for negative anomalies, 'pos' for positive anomalies")
-    
+    yield_group_vis.add_argument("--show_values", help="Show values on the anomaly map", action="store_true")
 
 
 

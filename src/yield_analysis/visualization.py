@@ -89,7 +89,7 @@ def plot_anomaly_series(region, type, save=False, show=False):
         
 
 
-def plot_anomaly_map(region, anomaly="neg", sel_years=None, save=False, show=False):
+def plot_anomaly_map(region, anomaly="neg", sel_years=None, save=False, show=False, show_values=False, **kwargs):
     """Plots the yield anomaly map of the subregion of a given region.
     Args:
         region (str): The name of the region to plot.
@@ -191,6 +191,21 @@ def plot_anomaly_map(region, anomaly="neg", sel_years=None, save=False, show=Fal
         # Remove axis
         ax.axis("off")
         ax.set_aspect("equal", adjustable="box")
+
+        if show_values :
+            # Annotate each region with its anomaly value at the region's representative point
+            if "anom" in gdf_year.columns:
+                for _, row in gdf_year.dropna(subset=["anom"]).iterrows():
+                    geom = row.geometry
+                    if geom is None or geom.is_empty:
+                        continue
+                    try:
+                        pt = geom.representative_point()  # guaranteed to lie inside the polygon
+                    except Exception:
+                        pt = geom.centroid
+                    x, y = pt.x, pt.y
+                    val = row["anom"]
+                    ax.annotate(f"{val:.2f}", xy=(x, y), transform=ccrs.PlateCarree(), ha='center', va='center', fontsize=4, fontweight='bold', bbox={"boxstyle": "round, pad=0.2, rounding_size=0.5", "facecolor":"white", "ec":"black", "lw":0.2, "alpha":0.7})
 
         if save:
             if isinstance(region, str):

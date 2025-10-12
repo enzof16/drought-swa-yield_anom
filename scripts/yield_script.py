@@ -63,7 +63,7 @@ def run(args):
             print("! WARNING : Plots will not be saved unless --save_plot is specified !")
 
         all_plots = not (getattr(args, "plot_anomaly_series", False) or getattr(args, "plot_anomaly_map", False) or getattr(args, "plot_area_covered", False))
-        for region in args.regions:
+        for region in config.regions_list:
             print(f"     > Region: {region}")
             if getattr(args, "plot_anomaly_series", False) or all_plots:
                 print("         > Plotting Anomaly Series")
@@ -71,7 +71,7 @@ def run(args):
                 print("         Anomaly series saved")
             if getattr(args, "plot_anomaly_map", False) or all_plots:
                 print("         > Plotting Anomaly Map")
-                vz.plot_anomaly_map(region, anomaly=getattr(args, "anomaly_map", "neg"), sel_years=[args.year_start, args.year_end], save=getattr(args, "save_plot"), show=getattr(args, "show_plot"))
+                vz.plot_anomaly_map(region, anomaly=getattr(args, "anomaly_map", "neg"), sel_years=[args.year_start, args.year_end], save=getattr(args, "save_plot"), show=getattr(args, "show_plot"), show_values=getattr(args, "show_values", False))
                 print("         Anomaly map saved")
             if getattr(args, "plot_area_covered", False) or all_plots:
                 print("         > Plotting Area Covered Series")
@@ -130,7 +130,7 @@ if __name__ == "__main__":
     group_vis.add_argument("--save_plot", help="Save plots after computation", action="store_true")
     group_vis.add_argument("--anomaly_type", type=str, default="normalized", choices=["standardized", "normalized"], help="Type of anomaly series to plot")
     group_vis.add_argument("--anomaly_map", type=str, default="neg", choices=["neg", "pos"], help="Type of anomaly map to plot. 'neg' for negative anomalies, 'pos' for positive anomalies")
-    
+    group_vis.add_argument("--show_values", help="Show values on the anomaly map", action="store_true")
     
     args = parser.parse_args()
     run(args)
